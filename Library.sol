@@ -51,14 +51,14 @@ contract Library {
 
     // Admin & User
 
-    function bookvailability(string calldata _bookName) public view returns (address) {
+    function bookavailability(string calldata _bookName) public view returns (address) {
         require(msg.sender == libAdmin || 
             bookNumber[bookName[_bookName]].borrowed == msg.sender, 
             "You have to be admin.");
         return bookNumber[bookName[_bookName]].borrowed;
     }
 
-    function bookvailability(uint _bookID) public view returns (address) {
+    function bookavailability(uint _bookID) public view returns (address) {
         require(_bookID < amountOfBooks, "There no such many books.");
         require(msg.sender == libAdmin || 
             bookNumber[_bookID].borrowed == msg.sender, 
