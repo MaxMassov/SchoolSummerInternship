@@ -163,11 +163,11 @@ contract SLonik is ERC20, Ownable {
     function updateSolution(uint _taskId, 
                         int _answer, int _accuracy, string calldata _picture) public onlyOwner {
 
-    checkExistence(_taskId);
+        checkExistence(_taskId);
 
-    // ToDo: update solution
-    solutions[newTaskNum] = Solution(_answer, _accuracy, _picture);
-    //        
+        // ToDo: update solution
+        solutions[newTaskNum] = Solution(_answer, _accuracy, _picture);
+        //        
     }
 
     // Student
@@ -222,8 +222,8 @@ contract SLonik is ERC20, Ownable {
         // ToDo: checking the solution
         bool approved = false;
         if (tasks[_taskId].isAutoChecked) {
-            approved = ((solutions[_taskId].answer -  answer) >= -solutions[_taskId].accuracy ||
-                (solutions[_taskId].answer -  answer) <= solutions[_taskId].accuracy);
+            approved = ((solutions[_taskId].answer -  answer) > -solutions[_taskId].accuracy &&
+                (solutions[_taskId].answer -  answer) < solutions[_taskId].accuracy);
         }
         else {}
         //
