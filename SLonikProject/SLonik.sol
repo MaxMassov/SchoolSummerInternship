@@ -156,7 +156,7 @@ contract SLonik is ERC20, Ownable {
         lowestCommission = min(lowestCommission, _commission);
 
         // ToDo: update task
-        tasks[newTaskNum] = Task(_taskUrl, "", _commission, _penalty,
+        tasks[_taskId] = Task(_taskUrl, "", _commission, _penalty,
                                     _award, _isAutoChecked, _isAvailable);
     }
 
@@ -166,7 +166,7 @@ contract SLonik is ERC20, Ownable {
         checkExistence(_taskId);
 
         // ToDo: update solution
-        solutions[newTaskNum] = Solution(_answer, _accuracy, _picture);
+        solutions[_taskId] = Solution(_answer, _accuracy, _picture);
         //        
     }
 
@@ -190,7 +190,7 @@ contract SLonik is ERC20, Ownable {
                 taskId = (taskId + 1) % newTaskNum;
             }     
         }
-        require(resolvedTasks[msg.sender][taskId] == 0, 
+        require(resolvedTasks[msg.sender][taskId] == 0 && tasks[taskId].isAvailable, 
             "You have gotten all the tasks or your value is not enough to pay the commission for the remaining tasks.");
         uint overpayment = msg.value - tasks[taskId].commission;
         require(msg.value >= tasks[taskId].commission, 
@@ -210,6 +210,7 @@ contract SLonik is ERC20, Ownable {
             "Your teacher has blocked the possibility of submitting and geting tasks for you.");
         require(resolvedTasks[msg.sender][_taskId] == 1, 
             "You have already solved this task or have never gotten it.");
+        require(tasks[_taskId].isAvailable, "This task is currently unavailable.");
         
         uint overpayment = 0;
         if (msg.value >= tasks[_taskId].penalty) {
