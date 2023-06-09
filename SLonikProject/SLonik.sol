@@ -35,7 +35,7 @@ contract SLonik is ERC20, Ownable {
         string picture;
     }
 
-    uint public totalSLonikAmount = 200;
+    uint public totalSLonikAmount = 0;
     uint public amountOfTasks = 0;
     uint newTaskNum = 0;
     uint public maxTasksInSolving = 5;
@@ -76,10 +76,12 @@ contract SLonik is ERC20, Ownable {
         if (_decrease) {
             require(totalSLonikAmount - _supplement > 0, "The total amount of SLoniks must be greater than 0.");
             totalSLonikAmount -= _supplement;
+            _burn(owner(), _supplement);
         } else {
             totalSLonikAmount += _supplement;
+            _mint(owner(), _supplement);
         }
-        _mint(owner(), totalSLonikAmount);
+        
     }
 
     function withdraw() public onlyOwner {
@@ -244,15 +246,18 @@ contract SLonik is ERC20, Ownable {
 
         students[msg.sender].inSolving--;
         resolvedTasks[msg.sender][_taskId] = 2;
-        payable(msg.sender).transfer(tasks[_taskId].penalty + tasks[_taskId].award);
+        payable(msg.sender).transfer(tasks[_taskId].penalty);
+        totalSLonikAmount += costOfEvaluation;
+        _mint(msg.sender,  tasks[_taskId].award);
         return "The task is done!";
     }
 
     function getFive() public payable {
 
-        require(msg.value == costOfEvaluation, "You have attached the wrong cost.");
-        
-        // ToDo: return 5
+        require(balanceOf(msg.sender) >= costOfEvaluation, "Your SLN is not enough");
+        totalSLonikAmount -= costOfEvaluation;
+        _burn(msg.sender, costOfEvaluation);
+
     }
 
 }
