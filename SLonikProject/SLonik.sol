@@ -86,7 +86,6 @@ contract SLonik is ERC20, Ownable {
         payable(owner()).transfer(address(this).balance);
     }
 
-
     // for students
 
     function changeMaxTasksInSolving(uint _newValue) public onlyOwner {
@@ -145,11 +144,16 @@ contract SLonik is ERC20, Ownable {
         delete solutions[_taskId];
     }
 
-    function taskInfo(uint _taskId) public onlyOwner view returns (Task memory, Solution memory) {
+    function taskInfo(uint _taskId) public view returns (Task memory, Solution memory) {
 
         checkExistence(_taskId);
-
-        return (tasks[_taskId], solutions[_taskId]);
+        if (msg.sender == owner()) {
+            return (tasks[_taskId], solutions[_taskId]);
+        } else if (tasks[_taskId].isAvailable && resolvedTasks[msg.sender][_taskId] == 1) {
+            return (tasks[_taskId], Solution(-1, -1, ""));
+        } else {
+            revert("Only a teacher or a student who has gotten the task, can see the task's info.");
+        }
     }
 
     function updateTask(uint _taskId, 
@@ -197,16 +201,16 @@ contract SLonik is ERC20, Ownable {
         }
         require(resolvedTasks[msg.sender][taskId] == 0 && tasks[taskId].isAvailable, 
             "You have gotten all the tasks or your value is not enough to pay the commission for the remaining tasks.");
-        uint overpayment = msg.value - tasks[taskId].commission;
         require(msg.value >= tasks[taskId].commission, 
             "Your value is not enough to pay the commission for the remaining tasks.");
+        uint overpayment = msg.value - tasks[taskId].commission;
         payable(msg.sender).transfer(overpayment);
         students[msg.sender].inSolving++;
         resolvedTasks[msg.sender][taskId] = 1;
         return tasks[taskId];
     }
 
-    function submitTask(uint _taskId, int answer, string calldata solution) public payable {
+    function submitTask(uint _taskId, int answer, string calldata solution) public payable returns (string memory) {
 
         checkExistence(_taskId);
         require(!isAllBlocked, 
@@ -217,13 +221,13 @@ contract SLonik is ERC20, Ownable {
             "You have already solved this task or have never gotten it.");
         require(tasks[_taskId].isAvailable, "This task is currently unavailable.");
         
-        uint overpayment = 0;
-        if (msg.value >= tasks[_taskId].penalty) {
-            overpayment = msg.value - tasks[_taskId].commission;
-        }
         require(msg.value >= tasks[_taskId].penalty, 
             "Your value is not enough to pay the penalty for completing this task in case of a wrong solution.");
-        payable(msg.sender).transfer(overpayment);
+        
+        if (msg.value > tasks[_taskId].penalty) {
+            payable(msg.sender).transfer(msg.value - tasks[_taskId].penalty);
+        }
+
 
         // ToDo: checking the solution
         bool approved = false;
@@ -234,11 +238,14 @@ contract SLonik is ERC20, Ownable {
         else {}
         //
         
-        require(approved, "The solution is wrong(");
+        if (!approved) {
+            return "The solution is wrong(";
+        }
 
         students[msg.sender].inSolving--;
         resolvedTasks[msg.sender][_taskId] = 2;
         payable(msg.sender).transfer(tasks[_taskId].penalty + tasks[_taskId].award);
+        return "The task is done!";
     }
 
     function getFive() public payable {
