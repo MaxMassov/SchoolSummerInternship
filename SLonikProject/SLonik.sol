@@ -82,6 +82,11 @@ contract SLonik is ERC20, Ownable {
         _mint(owner(), totalSLonikAmount);
     }
 
+    function withdraw() public onlyOwner {
+        payable(owner()).transfer(address(this).balance);
+    }
+
+
     // for students
 
     function changeMaxTasksInSolving(uint _newValue) public onlyOwner {
