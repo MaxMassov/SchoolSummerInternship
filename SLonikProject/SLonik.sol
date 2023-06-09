@@ -254,7 +254,7 @@ contract SLonik is ERC20, Ownable {
 
     function getFive() public payable {
 
-        require(balanceOf(msg.sender) >= costOfEvaluation, "Your SLN is not enough");
+        require(balanceOf(msg.sender) >= costOfEvaluation, "Your SLN is not enough.");
         totalSLonikAmount -= costOfEvaluation;
         _burn(msg.sender, costOfEvaluation);
 
